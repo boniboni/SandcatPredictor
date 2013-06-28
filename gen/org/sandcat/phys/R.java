@@ -89,5 +89,6 @@ public final class R {
         /**   DeviceListActivity 
          */
         public static final int title_paired_devices=0x7f050001;
+        public static final int wifi_not_enabled_leaving=0x7f050014;
     }
 }
