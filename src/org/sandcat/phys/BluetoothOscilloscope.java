@@ -33,6 +33,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.util.regex.Pattern;
+
 import java.util.ArrayList;
 
 import org.sandcat.phys.ClientScanResult;
@@ -44,6 +46,7 @@ Button.OnClickListener {
 
 	// Message types sent from the BluetoothRfcommClient Handler
 	public static final int MESSAGE_STATE_CHANGE = 1;
+	public static final int WPA2_PSK = 4;
 	public static final int MESSAGE_READ = 2;
 	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
@@ -116,6 +119,7 @@ Button.OnClickListener {
 	public WifiApManager wifiApManager;
 	public WifiConfiguration WifiBackup;
 	public WifiConfiguration WifiConfig;
+	private static final Pattern HEX_DIGITS = Pattern.compile("[0-9A-Fa-f]+");
 
 	/** Called when the activity is first created. */
 	@Override
@@ -130,12 +134,12 @@ Button.OnClickListener {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 		// initialize WifiApManager class and backup settings
-        if (!startWifi()) {
-        	Toast.makeText(this, "Sandcat is sad. Cannot start.",
+		if (!startWifi()) {
+			Toast.makeText(this, "Sandcat is sad. Cannot start.",
 					Toast.LENGTH_LONG).show();
 			finish();
 			return;
-        }
+		}
 
 		// If the adapter is null, then Bluetooth is not supported
 		if (mBluetoothAdapter == null) {
@@ -157,21 +161,71 @@ Button.OnClickListener {
 		wifiApManager = new WifiApManager(this);
 		WifiBackup = new WifiConfiguration();
 		WifiConfig = new WifiConfiguration();
-		WifiConfig.SSID = "Sandcat";
-		WifiConfig.preSharedKey = "\"sandcat12345\"";
-		WifiConfig.hiddenSSID = true;
-		WifiConfig.status = WifiConfiguration.Status.ENABLED;
-		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+		String ssid = "Sandcat";
+		String preshared = "sandcat123456";
+
+		WifiConfig.preSharedKey = preshared; //quoteNonHex(preshared, 64);
+		WifiConfig.SSID = ssid;
+		WifiConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+		WifiConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA); // For WPA
+		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN); // For WPA2
+		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA2_PSK);
+		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+	    WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+	    WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+
 		if (wifiApManager.setWifiApEnabled(WifiConfig, true)) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	private static String quoteNonHex(String value, int... allowedLengths) {
+		return isHexOfLength(value, allowedLengths) ? value : convertToQuotedString(value);
+	}
+
+	/**
+	 * Encloses the incoming string inside double quotes, if it isn't already quoted.
+	 * @param string the input string
+	 * @return a quoted string, of the form "input".  If the input string is null, it returns null
+	 * as well.
+	 */
+	private static String convertToQuotedString(String string) {
+		if (string == null || string.length() == 0) {
+			return null;
+		}
+		// If already quoted, return as-is
+		if (string.charAt(0) == '"' && string.charAt(string.length() - 1) == '"') {
+			return string;
+		}
+		return '\"' + string + '\"';
+	}
+
+	/**
+	 * @param value input to check
+	 * @param allowedLengths allowed lengths, if any
+	 * @return true if value is a non-null, non-empty string of hex digits, and if allowed lengths are given, has
+	 *  an allowed length
+	 */
+	private static boolean isHexOfLength(CharSequence value, int... allowedLengths) {
+		if (value == null || !HEX_DIGITS.matcher(value).matches()) {
+			return false;
+		}
+		if (allowedLengths.length == 0) {
+			return true;
+		}
+		for (int length : allowedLengths) {
+			if (value.length() == length) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

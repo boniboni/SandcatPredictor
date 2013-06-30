@@ -19,3 +19,27 @@ package org.sandcat.phys;
 public enum WIFI_AP_STATE {
 	WIFI_AP_STATE_DISABLING, WIFI_AP_STATE_DISABLED, WIFI_AP_STATE_ENABLING, WIFI_AP_STATE_ENABLED, WIFI_AP_STATE_FAILED
 }
+
+enum NetworkType {
+
+	  WEP,
+	  WPA,
+	  NO_PASSWORD;
+
+	  static NetworkType forIntentValue(String networkTypeString) {
+	    if (networkTypeString == null) {
+	      return NO_PASSWORD;
+	    }
+	    if ("WPA".equals(networkTypeString)) {
+	      return WPA;
+	    }
+	    if ("WEP".equals(networkTypeString)) {
+	      return WEP;
+	    }
+	    if ("nopass".equals(networkTypeString)) {
+	      return NO_PASSWORD;
+	    }
+	    throw new IllegalArgumentException(networkTypeString);
+	  }
+
+	}

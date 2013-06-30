@@ -67,7 +67,7 @@ public final class R {
     public static final class string {
         public static final int app_name=0x7f050000;
         public static final int bt_not_enabled_leaving=0x7f050009;
-        /**   BluetoothOscilloscope 
+        /**  BluetoothOscilloscope 
          */
         public static final int button_connect=0x7f050008;
         public static final int button_scan=0x7f050003;
@@ -86,7 +86,7 @@ public final class R {
         public static final int title_connecting=0x7f05000b;
         public static final int title_not_connected=0x7f05000c;
         public static final int title_other_devices=0x7f050002;
-        /**   DeviceListActivity 
+        /**  DeviceListActivity 
          */
         public static final int title_paired_devices=0x7f050001;
         public static final int wifi_not_enabled_leaving=0x7f050014;

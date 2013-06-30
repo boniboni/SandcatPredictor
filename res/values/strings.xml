@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2009 The Android Open Source Project
+<!--
+     Copyright (C) 2009 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -17,8 +18,8 @@
 <resources>
 
     <string name="app_name">Sandcat Bluetooth Oscilloscope</string>
-    
-    <!--  DeviceListActivity -->
+
+    <!-- DeviceListActivity -->
     <string name="title_paired_devices">Paired Devices</string>
     <string name="title_other_devices">Other Available Devices</string>
     <string name="button_scan">Scan for devices</string>
@@ -26,8 +27,8 @@
     <string name="none_paired">No devices have been paired</string>
     <string name="scanning">scanning for devices&#8230;</string>
     <string name="none_found">No devices found</string>
-    
-    <!--  BluetoothOscilloscope -->
+
+    <!-- BluetoothOscilloscope -->
     <string name="button_connect">Connect</string>
     <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Oscilloscope.</string>
     <string name="title_connected_to">connected to: </string>
@@ -41,5 +42,5 @@
     <string name="ch1_scale_default">200mV</string>
     <string name="ch2_scale_default">500mV</string>
     <string name="wifi_not_enabled_leaving">Sandcat is sad. Wifi cannot be enabled.</string>
-    
+
 </resources>
