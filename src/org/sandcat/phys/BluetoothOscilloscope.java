@@ -24,8 +24,6 @@ import android.os.PowerManager;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -33,13 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import java.util.regex.Pattern;
-
-import java.util.ArrayList;
-
 import org.sandcat.phys.ClientScanResult;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiConfiguration.KeyMgmt;
 
 public class BluetoothOscilloscope extends Activity implements
 Button.OnClickListener {
@@ -113,13 +106,12 @@ Button.OnClickListener {
 	static byte ch1_pos = 24, ch2_pos = 17; // 0 to 40
 
 	// stay awake
-	protected PowerManager.WakeLock mWakeLock;
+	//protected PowerManager.WakeLock mWakeLock;
 
 	// implements WifiApManager class
 	public WifiApManager wifiApManager;
 	public WifiConfiguration WifiBackup;
 	public WifiConfiguration WifiConfig;
-	private static final Pattern HEX_DIGITS = Pattern.compile("[0-9A-Fa-f]+");
 
 	/** Called when the activity is first created. */
 	@Override
@@ -134,10 +126,10 @@ Button.OnClickListener {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 		// initialize WifiApManager class and backup settings
-		if (!startWifi()) {
+		if (startWifi() == false) {
 			Toast.makeText(this, "Sandcat is sad. Cannot start.",
 					Toast.LENGTH_LONG).show();
-			finish();
+			finish();			
 			return;
 		}
 
@@ -149,11 +141,11 @@ Button.OnClickListener {
 			return;
 		}
 
-		// Prevent phone from sleeping
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
-				"My Tag");
-		this.mWakeLock.acquire();
+		//	Prevent phone from sleeping
+		//	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		//	this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
+		//			"My Tag");
+		//	this.mWakeLock.acquire();
 	}
 
 	// initialize WifiApManager class and backup settings
@@ -161,71 +153,22 @@ Button.OnClickListener {
 		wifiApManager = new WifiApManager(this);
 		WifiBackup = new WifiConfiguration();
 		WifiConfig = new WifiConfiguration();
-		String ssid = "Sandcat";
-		String preshared = "sandcat123456";
 
-		WifiConfig.preSharedKey = preshared; //quoteNonHex(preshared, 64);
-		WifiConfig.SSID = ssid;
+		WifiConfig.preSharedKey = "sandcat123456";
+		WifiConfig.SSID = "Sandcat";
 		WifiConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-		WifiConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.WPA); // For WPA
-		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN); // For WPA2
+		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
 		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA2_PSK);
-		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
 		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
 		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-	    WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-	    WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
 
-		if (wifiApManager.setWifiApEnabled(WifiConfig, true)) {
+		if (wifiApManager.setWifiApEnabled(WifiConfig, true) == true) {
 			return true;
 		} else {
 			return false;
 		}
-	}
-
-	private static String quoteNonHex(String value, int... allowedLengths) {
-		return isHexOfLength(value, allowedLengths) ? value : convertToQuotedString(value);
-	}
-
-	/**
-	 * Encloses the incoming string inside double quotes, if it isn't already quoted.
-	 * @param string the input string
-	 * @return a quoted string, of the form "input".  If the input string is null, it returns null
-	 * as well.
-	 */
-	private static String convertToQuotedString(String string) {
-		if (string == null || string.length() == 0) {
-			return null;
-		}
-		// If already quoted, return as-is
-		if (string.charAt(0) == '"' && string.charAt(string.length() - 1) == '"') {
-			return string;
-		}
-		return '\"' + string + '\"';
-	}
-
-	/**
-	 * @param value input to check
-	 * @param allowedLengths allowed lengths, if any
-	 * @return true if value is a non-null, non-empty string of hex digits, and if allowed lengths are given, has
-	 *  an allowed length
-	 */
-	private static boolean isHexOfLength(CharSequence value, int... allowedLengths) {
-		if (value == null || !HEX_DIGITS.matcher(value).matches()) {
-			return false;
-		}
-		if (allowedLengths.length == 0) {
-			return true;
-		}
-		for (int length : allowedLengths) {
-			if (value.length() == length) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -244,19 +187,23 @@ Button.OnClickListener {
 		//		setupOscilloscope();
 		//}
 		// If Wifi is not on, request that it be enabled.
-		if (wifiApManager.isWifiApEnabled()) {
+		if (wifiApManager.isWifiApEnabled() == true) {
 
 			// AP is now enabled, so set up the oscilloscope
-			setupOscilloscope();
+			setupOscilloscope();			
+			return;
 		}			
-		else if (startWifi()) {
+		else if (startWifi() == true) {
 
 			// AP is now enabled, so set up the oscilloscope
 			setupOscilloscope();
+			return;
 		} else {
 			// User did not enable Wifi AP or an error occured
 			Toast.makeText(this, R.string.wifi_not_enabled_leaving, Toast.LENGTH_SHORT).show();
-			finish(); }
+			finish(); 
+			return;
+			}
 	}
 
 
@@ -366,9 +313,9 @@ Button.OnClickListener {
 		if (mRfcommClient != null)
 			mRfcommClient.stop();
 		// release screen being on
-		if (mWakeLock.isHeld()) {
-			mWakeLock.release();
-		}
+		//	if (mWakeLock.isHeld()) {
+		//	mWakeLock.release();
+		//	}
 	}
 
 	/**

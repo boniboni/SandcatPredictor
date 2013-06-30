@@ -28,15 +28,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import android.util.Log;
-import java.util.List;
-import java.util.regex.Pattern;
-
 public class WifiApManager {
-
-	private static final String TAG = WifiApManager.class.getSimpleName();
-	private static final Pattern HEX_DIGITS = Pattern.compile("[0-9A-Fa-f]+");
-
 	private final WifiManager mWifiManager;
 
 	public WifiApManager(Context context) {
@@ -53,11 +45,10 @@ public class WifiApManager {
 	 * @return {@code true} if the operation succeeds, {@code false} otherwise
 	 */
 	public boolean setWifiApEnabled(WifiConfiguration wifiConfig, boolean enabled) {
+		if ((enabled == true) && (mWifiManager.isWifiEnabled() == true)) { // disable WiFi in any case
+			mWifiManager.setWifiEnabled(false);
+		}
 		try {
-			if (enabled) { // disable WiFi in any case
-				mWifiManager.setWifiEnabled(false);
-			}
-
 			Method method = mWifiManager.getClass().getMethod("setWifiApEnabled", WifiConfiguration.class, boolean.class);
 			return (Boolean) method.invoke(mWifiManager, wifiConfig, enabled);
 		} catch (Exception e) {
