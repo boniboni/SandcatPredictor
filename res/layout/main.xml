@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/WaveformArea"
             android:layout_marginLeft="5dp"
-            android:text="1"
+            android:text="@string/track1"
             android:textColor="@color/ch1_color"
             android:textStyle="bold" />
 
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/WaveformArea"
             android:layout_marginLeft="5dp"
-            android:text="2-"
+            android:text="@string/track2"
             android:textColor="@color/ch2_color"
             android:textStyle="bold" />
     </RelativeLayout>
@@ -77,7 +77,6 @@
             android:id="@+id/txt_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/txt_appname"
             android:text="@string/status_label"
             android:textColor="@color/label_color" />
 
@@ -102,14 +101,13 @@
             android:id="@+id/horizontal_values"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:orientation="horizontal" >
 
             <TextView
                 android:id="@+id/txt_timebase_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Timebase:"
+                android:text="@string/timebase_"
                 android:textColor="@color/label_color"
                 android:textSize="5pt" />
 
@@ -127,20 +125,21 @@
             android:id="@+id/horizontal_adjusts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:orientation="horizontal" >
 
             <Button
                 android:id="@+id/btn_timebase_decrease"
                 android:layout_width="55dp"
                 android:layout_height="35dp"
-                android:text="&lt;" />
+                android:text="@string/_lt_" />
 
             <Button
                 android:id="@+id/btn_timebase_increase"
+                style="android:attr/buttonBarButtonStyleStyle"
                 android:layout_width="55dp"
                 android:layout_height="35dp"
-                android:text=">" />
+                android:text="@string/_" />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -157,21 +156,21 @@
             android:id="@+id/txt_position_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Postion"
+            android:text="@string/postion"
             android:textColor="@color/label_color" />
 
         <Button
             android:id="@+id/btn_position_up"
             android:layout_width="50dp"
             android:layout_height="35dp"
-            android:text="up"
+            android:text="@string/up"
             android:textSize="4pt" />
 
         <Button
             android:id="@+id/btn_position_down"
             android:layout_width="50dp"
             android:layout_height="35dp"
-            android:text="down"
+            android:text="@string/down"
             android:textSize="4pt" />
     </LinearLayout>
 
@@ -187,21 +186,21 @@
             android:id="@+id/txt_position_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Scale"
+            android:text="@string/scale"
             android:textColor="@color/label_color" />
 
         <Button
             android:id="@+id/btn_scale_increase"
             android:layout_width="50dp"
             android:layout_height="35dp"
-            android:text="inc"
+            android:text="@string/inc"
             android:textSize="4pt" />
 
         <Button
             android:id="@+id/btn_scale_decrease"
             android:layout_width="50dp"
             android:layout_height="35dp"
-            android:text="dec"
+            android:text="@string/dec"
             android:textSize="4pt" />
     </LinearLayout>
 
@@ -219,7 +218,7 @@
             android:layout_width="70dp"
             android:layout_height="35dp"
             android:checked="true"
-            android:text="CH1:"
+            android:text="@string/ch1_"
             android:textColor="@color/ch1_color"
             android:textSize="5pt" />
 
@@ -235,7 +234,7 @@
             android:id="@+id/rbtn_ch2"
             android:layout_width="70dp"
             android:layout_height="35dp"
-            android:text="CH2:"
+            android:text="@string/ch2_"
             android:textColor="@color/ch2_color"
             android:textSize="5pt" />
 
@@ -261,7 +260,7 @@
             android:id="@+id/txt_btstatus"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="BT status:"
+            android:text="@string/bt_status_"
             android:textColor="@color/status_color" />
 
         <Button

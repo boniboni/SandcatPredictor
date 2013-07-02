@@ -42,5 +42,19 @@
     <string name="ch1_scale_default">200mV</string>
     <string name="ch2_scale_default">500mV</string>
     <string name="wifi_not_enabled_leaving">Sandcat is sad. Wifi cannot be enabled.</string>
+    <string name="track1">1</string>
+    <string name="track2">2</string>
+    <string name="dec">dec</string>
+    <string name="timebase_">Timebase:</string>
+    <string name="_lt_">&amp;lt;</string>
+    <string name="up">up</string>
+    <string name="_">></string>
+    <string name="ch1_">CH1:</string>
+    <string name="scale">Scale</string>
+    <string name="postion">Position</string>
+    <string name="down">down</string>
+    <string name="ch2_">CH2:</string>
+    <string name="inc">inc</string>
+    <string name="bt_status_">BT status:</string>
 
 </resources>

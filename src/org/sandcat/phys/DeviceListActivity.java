@@ -18,30 +18,32 @@
 package org.sandcat.phys;
 
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Set;
-
-import org.sandcat.phys.ClientScanResult;
-import org.sandcat.phys.WifiApManager;
-
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.view.Window;
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 
 /**
@@ -54,8 +56,6 @@ public class DeviceListActivity extends Activity {
 	// Return Intent extra
 	public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
-	// Member fields
-	private WifiApManager wifiApManager;
 	//private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
 	private ArrayAdapter<String> mNewDevicesArrayAdapter;
@@ -105,9 +105,7 @@ public class DeviceListActivity extends Activity {
 		// Turn on sub-title for new devices
 		findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
-		// Initialize array adapters. One for already paired devices and 
-		// one for newly discovered devices
-		wifiApManager = new WifiApManager(this);
+		new WifiApManager(this);
 		mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
 		mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
 
@@ -122,8 +120,8 @@ public class DeviceListActivity extends Activity {
 
 		newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
 		newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+		ArrayList<ClientScanResult> clients = getClientList(true, 300);
 
-		ArrayList<ClientScanResult> clients = wifiApManager.getClientList(true, 300);
 
 		if (clients.size() > 0){
 			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
@@ -133,6 +131,9 @@ public class DeviceListActivity extends Activity {
 		}
 		else {
 			String noDevices = getResources().getText(R.string.none_paired).toString();
+			mPairedDevicesArrayAdapter.add(noDevices);
+			mPairedDevicesArrayAdapter.add(noDevices);
+			mPairedDevicesArrayAdapter.add(noDevices);
 			mPairedDevicesArrayAdapter.add(noDevices);
 		}	
 	}
@@ -156,6 +157,44 @@ public class DeviceListActivity extends Activity {
 			finish();
 		}
 	};
+
+
+
+
+	public ArrayList<ClientScanResult> getClientList(boolean onlyReachables, int reachableTimeout) {
+		BufferedReader br = null;
+		ArrayList<ClientScanResult> result = null;
+
+		try {
+			result = new ArrayList<ClientScanResult>();
+			br = new BufferedReader(new FileReader("/proc/net/arp"));
+			String line;
+			boolean isReachable = true;
+			while ((line = br.readLine()) != null) {
+				String[] splitted = line.split(" +");
+
+				if ((splitted != null) && (splitted.length >= 4)) {
+					// Basic sanity check
+					String mac = splitted[3];
+
+					if (mac.matches("..:..:..:..:..:..")) {
+						result.add(new ClientScanResult(splitted[0], splitted[3], splitted[5], isReachable));
+					}
+				}
+	}
+} catch (Exception e) {
+	Log.e(this.getClass().toString(), e.getMessage());
+} finally {
+	try {
+		br.close();
+	} catch (IOException e) {
+		Log.e(this.getClass().toString(), e.getMessage());
+	}
+}
+
+return result;
+}
+
 }
 
 
