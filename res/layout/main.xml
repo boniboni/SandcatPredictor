@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/WaveformArea"
             android:layout_marginLeft="5dp"
-            android:text="1-"
+            android:text="1"
             android:textColor="@color/ch1_color"
             android:textStyle="bold" />
 
@@ -184,7 +184,7 @@
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/txt_position_label"
+            android:id="@+id/txt_position_label2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Scale"

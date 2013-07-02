@@ -11,35 +11,37 @@ package org.sandcat.phys;
 import android.app.Activity;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+/*import android.bluetooth.BluetoothDevice;
 
 import android.content.Context;
+
+import android.os.Handler;
+import android.os.Message;
+import android.os.PowerManager;*/
+
 import android.content.Intent;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.PowerManager;
-
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 
 import android.widget.Button;
-import android.widget.RadioButton;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
+//import android.widget.RadioButton;
+import org.sandcat.phys.DeviceListActivity;
 
-import org.sandcat.phys.ClientScanResult;
+import android.widget.Toast;
+//import android.widget.ToggleButton;
+//import android.widget.TextView;
+// import org.sandcat.phys.ClientScanResult;
 import android.net.wifi.WifiConfiguration;
 
-public class BluetoothOscilloscope extends Activity implements
-Button.OnClickListener {
+// implements Button.OnClickListener 
+public class BluetoothOscilloscope extends Activity {
 
 	// Message types sent from the BluetoothRfcommClient Handler
 	public static final int MESSAGE_STATE_CHANGE = 1;
-	public static final int WPA2_PSK = 4;
 	public static final int MESSAGE_READ = 2;
 	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
@@ -54,8 +56,8 @@ Button.OnClickListener {
 	private static final int REQUEST_ENABLE_BT = 2;
 	private static final int REQUEST_ENABLE_WIFI = 3;
 
-	// bt-uart constants
-	private static final int MAX_SAMPLES = 640;
+	// bt-uart constants 
+	/* private static final int MAX_SAMPLES = 640;
 	private static final int MAX_LEVEL = 240;
 	private static final int DATA_START = (MAX_LEVEL + 1);
 	private static final int DATA_END = (MAX_LEVEL + 2);
@@ -66,32 +68,34 @@ Button.OnClickListener {
 	private static final byte ADJ_POSITION = 0x03;
 
 	private static final byte CHANNEL1 = 0x01;
-	private static final byte CHANNEL2 = 0x02;
+	private static final byte CHANNEL2 = 0x02; */
 
 	// Run/Pause status
-	private boolean bReady = false;
+	// private boolean bReady = false;
+	/* 
 	// receive data
 	private int[] ch1_data = new int[MAX_SAMPLES / 2];
 	private int[] ch2_data = new int[MAX_SAMPLES / 2];
 	private int dataIndex = 0, dataIndex1 = 0, dataIndex2 = 0;
-	private boolean bDataAvailable = false;
+	private boolean bDataAvailable = false; */
 
 	// Layout Views
-	private TextView mBTStatus;
+	
 	private Button mConnectButton;
-	private RadioButton rb1, rb2;
-	private TextView ch1pos_label, ch2pos_label;
-	private Button btn_pos_up, btn_pos_down;
+	// private TextView mBTStatus; 
+	// private RadioButton rb1, rb2;
+	// private TextView ch1pos_label, ch2pos_label;
+	/* private Button btn_pos_up, btn_pos_down;
 	private TextView ch1_scale, ch2_scale;
 	private Button btn_scale_up, btn_scale_down;
 	private TextView time_per_div;
 	private Button timebase_inc, timebase_dec;
-	private ToggleButton run_buton;
+	private ToggleButton run_buton; */
 
-	public WaveformView mWaveform = null;
+	// public WaveformView mWaveform = null;
 
 	// Name of the connected device
-	private String mConnectedDeviceName = null;
+	// private String mConnectedDeviceName = null;
 	// Local Bluetooth adapter
 	private BluetoothAdapter mBluetoothAdapter = null;
 	// Member object for the RFCOMM services
@@ -158,7 +162,7 @@ Button.OnClickListener {
 		WifiConfig.SSID = "Sandcat";
 		WifiConfig.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
 		WifiConfig.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-		WifiConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA2_PSK);
+		WifiConfig.allowedKeyManagement.set(4);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
 		WifiConfig.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
 		WifiConfig.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
@@ -203,7 +207,7 @@ Button.OnClickListener {
 			Toast.makeText(this, R.string.wifi_not_enabled_leaving, Toast.LENGTH_SHORT).show();
 			finish(); 
 			return;
-			}
+		}
 	}
 
 
@@ -214,21 +218,21 @@ Button.OnClickListener {
 		// not enabled during onStart(), so we were paused to enable it...
 		// onResume() will be called when ACTION_REQUEST_ENABLE activity
 		// returns.
-		if (mRfcommClient != null) {
-			// Only if the state is STATE_NONE, do we know that we haven't
-			// started already
-			if (mRfcommClient.getState() == BluetoothRfcommClient.STATE_NONE) {
-				// Start the Bluetooth RFCOMM services
-				mRfcommClient.start();
-			}
-		}
+		//	if (mRfcommClient != null) {
+		// Only if the state is STATE_NONE, do we know that we haven't
+		// started already
+		//	if (mRfcommClient.getState() == BluetoothRfcommClient.STATE_NONE) {
+		// Start the Bluetooth RFCOMM services
+		//			mRfcommClient.start();
+		//		}
+		//	}
 	}
 
-	@Override
+	/* @Override
 	public void onClick(View v) {
 		int buttonID;
 		buttonID = v.getId();
-		switch (buttonID) {
+		 switch (buttonID) {
 		case R.id.btn_position_up:
 			if (rb1.isChecked() && (ch1_pos < 38)) {
 				ch1_pos += 1;
@@ -304,7 +308,7 @@ Button.OnClickListener {
 			}
 			break;
 		}
-	}
+	}  */
 
 	@Override
 	public void onDestroy() {
@@ -324,7 +328,7 @@ Button.OnClickListener {
 	 * @param message
 	 *            A string of text to send.
 	 */
-	private void sendMessage(String message) {
+	/* private void sendMessage(String message) {
 		// Check that we're actually connected before trying anything
 		if (mRfcommClient.getState() != BluetoothRfcommClient.STATE_CONNECTED) {
 			Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT)
@@ -337,26 +341,28 @@ Button.OnClickListener {
 			byte[] send = message.getBytes();
 			mRfcommClient.write(send);
 		}
-	}
+	} */
 
 	private void setupOscilloscope() {
 
-		mBTStatus = (TextView) findViewById(R.id.txt_btstatus);
+		// mBTStatus = (TextView) findViewById(R.id.txt_btstatus);
 
 		mConnectButton = (Button) findViewById(R.id.button_connect);
 		mConnectButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View arg0) {
-				BTConnect();
+				Log.e("wut", "onCreate called");
+				WFConnect();
 			}
 		});
 
+		/* 
 		rb1 = (RadioButton) findViewById(R.id.rbtn_ch1);
 		rb2 = (RadioButton) findViewById(R.id.rbtn_ch2);
 
 		ch1pos_label = (TextView) findViewById(R.id.txt_ch1pos);
 		ch2pos_label = (TextView) findViewById(R.id.txt_ch2pos);
 		ch1pos_label.setPadding(0, toScreenPos(ch1_pos), 0, 0);
-		ch2pos_label.setPadding(0, toScreenPos(ch2_pos), 0, 0);
+		ch2pos_label.setPadding(0, toScreenPos(ch2_pos), 0, 0); 
 
 		btn_pos_up = (Button) findViewById(R.id.btn_position_up);
 		btn_pos_down = (Button) findViewById(R.id.btn_position_down);
@@ -381,27 +387,30 @@ Button.OnClickListener {
 		timebase_dec.setOnClickListener(this);
 
 		run_buton = (ToggleButton) findViewById(R.id.tbtn_runtoggle);
-		run_buton.setOnClickListener(this);
+		run_buton.setOnClickListener(this); 	 */
 
 		// Initialize the BluetoothRfcommClient to perform bluetooth connections
-		mRfcommClient = new BluetoothRfcommClient(this, mHandler);
+		//	mRfcommClient = new BluetoothRfcommClient(this, mHandler);
 
 		// waveform / plot area
-		mWaveform = (WaveformView) findViewById(R.id.WaveformArea);
+		//	mWaveform = (WaveformView) findViewById(R.id.WaveformArea);
 	}
 
-	private void BTConnect() {
+	/**
+	 * 
+	 */
+	private void WFConnect() {
 		Intent serverIntent = new Intent(this, DeviceListActivity.class);
 		startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
 	}
 
-	private int toScreenPos(byte position) {
+	/* private int toScreenPos(byte position) {
 		// return ( (int)MAX_LEVEL - (int)position*6 );
 		return ((int) MAX_LEVEL - (int) position * 6 - 7);
-	}
+	} */
 
 	// The Handler that gets information back from the BluetoothRfcommClient
-	private final Handler mHandler = new Handler() {
+/*	private final Handler mHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -475,7 +484,7 @@ Button.OnClickListener {
 			else
 				return (int) b;
 		}
-	};
+	}; */
 
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		switch (requestCode) {
@@ -483,13 +492,11 @@ Button.OnClickListener {
 			// When DeviceListActivity returns with a device to connect
 			if (resultCode == Activity.RESULT_OK) {
 				// Get the device MAC address
-				String address = data.getExtras().getString(
-						DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+				String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 				// Get the BLuetoothDevice object
-				BluetoothDevice device = mBluetoothAdapter
-						.getRemoteDevice(address);
+				// BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 				// Attempt to connect to the device
-				mRfcommClient.connect(device);
+				// mRfcommClient.connect(device);
 			}
 			break;
 		case REQUEST_ENABLE_BT:
