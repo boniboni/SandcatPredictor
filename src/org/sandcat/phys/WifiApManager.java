@@ -87,7 +87,7 @@ public class WifiApManager {
 	 * @hide Dont open yet
 	 */
 	public boolean isWifiApEnabled() {
-		return getWifiApState() == WIFI_AP_STATE.WIFI_AP_STATE_ENABLED;
+		return ((getWifiApState() == WIFI_AP_STATE.WIFI_AP_STATE_ENABLED) && (getWifiApSSID().equals("Sandcat")));
 	}
 
 	/**
@@ -98,6 +98,18 @@ public class WifiApManager {
 		try {
 			Method method = mWifiManager.getClass().getMethod("getWifiApConfiguration");
 			return (WifiConfiguration) method.invoke(mWifiManager);
+		} catch (Exception e) {
+			Log.e(this.getClass().toString(), "", e);
+			return null;
+		}
+	}
+	
+	public String getWifiApSSID() {
+		WifiConfiguration cfg = new WifiConfiguration();
+		try {
+			Method method = mWifiManager.getClass().getMethod("getWifiApConfiguration");
+			cfg = (WifiConfiguration) method.invoke(mWifiManager);
+			return cfg.SSID;
 		} catch (Exception e) {
 			Log.e(this.getClass().toString(), "", e);
 			return null;

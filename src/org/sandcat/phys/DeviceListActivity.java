@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import java.util.ArrayList;
@@ -44,6 +46,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
@@ -55,14 +58,17 @@ import android.widget.TextView;
 public class DeviceListActivity extends Activity {
 	// Return Intent extra
 	public static String EXTRA_DEVICE_ADDRESS = "device_address";
+	
+	public static final int CONNECT_STATUS = 1;
 
 	//private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
-//	private ArrayAdapter<String> mNewDevicesArrayAdapter;
+	//	private ArrayAdapter<String> mNewDevicesArrayAdapter;
 	private ListView pairedListView;
-//	private ListView newDevicesListView;
+	//	private ListView newDevicesListView;
 	private String TAG = "SANDCAT";
 	private boolean VERBOSE = true;
+	private UDPCommClient UDPDiscovery;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -75,6 +81,9 @@ public class DeviceListActivity extends Activity {
 
 		// Set result CANCELED incase the user backs out
 		setResult(Activity.RESULT_CANCELED);
+
+		// initialize handler to treat UDP discoveries
+		UDPDiscovery = new UDPCommClient(this, mHandler);
 
 		// Initialize the button to perform device discovery
 		Button scanButton = (Button) findViewById(R.id.button_scan);
@@ -105,14 +114,16 @@ public class DeviceListActivity extends Activity {
 		setTitle(R.string.scanning);
 		setProgressBarIndeterminateVisibility(true);
 		
+		if ()
+
 		// Turn on sub-title for new devices
-	//	findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+		//	findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
 		mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
-	//	mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
+		//	mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
 
 		pairedListView = (ListView) findViewById(R.id.paired_devices);
-//		newDevicesListView = (ListView) findViewById(R.id.new_devices);
+		//		newDevicesListView = (ListView) findViewById(R.id.new_devices);
 
 		// Find and set up the ListView for paired devices
 		pairedListView.setAdapter(mPairedDevicesArrayAdapter);
@@ -120,10 +131,11 @@ public class DeviceListActivity extends Activity {
 
 		// Find and set up the ListView for newly discovered devices
 
-	//	newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
-	//	newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-		ArrayList<ClientScanResult> clients = getClientList(true, 300);
+		//	newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
+		//	newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 		
+		ArrayList<ClientScanResult> clients = getClientList(true, 300);
+
 		if (clients.size() > 0){
 			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
 			for (ClientScanResult clientScanResult : clients) {
@@ -181,20 +193,43 @@ public class DeviceListActivity extends Activity {
 						result.add(new ClientScanResult(splitted[0], splitted[3], splitted[5], isReachable));
 					}
 				}
+			}
+		} catch (Exception e) {
+			Log.e(this.getClass().toString(), e.getMessage());
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+				Log.e(this.getClass().toString(), e.getMessage());
+			}
+		}
+
+		return result;
 	}
-} catch (Exception e) {
-	Log.e(this.getClass().toString(), e.getMessage());
-} finally {
-	try {
-		br.close();
-	} catch (IOException e) {
-		Log.e(this.getClass().toString(), e.getMessage());
-	}
-}
 
-return result;
+	private final Handler mHandler = new Handler(){
+		@Override
+		public void handleMessage(Message msg){
+			switch (msg.what){
+			case CONNECT_STATUS:
+				switch (msg.arg1){
+				case UDPCommClient.NEW_DEVICE:
+					mBTStatus.setText(R.string.title_connected_to);
+					mBTStatus.append(mConnectedDeviceName);
+					break;
+				case UDPCommClient.STATE_CONNECTING:
+					mBTStatus.setText(R.string.title_connecting);
+					break;
+				case UDPCommClient.STATE_NONE:
+					mBTStatus.setText(R.string.title_not_connected);
+					break;
+				case UDPCommClient.STATE_FAILED:
+					mBTStatus.setText(R.string.title_failed);
+					break;
+				}
+				break;
+			}
+		}
+	};
 }
-
-}
-
 

@@ -176,6 +176,9 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	public synchronized void onResume(){
 		super.onResume();
 		if (VERBOSE) { Log.v(TAG, "-- ON RESUME --"); }
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag"); 
+		this.mWakeLock.acquire();
 		// Performing this check in onResume() covers the case in which AP was
 		// not enabled during onStart(), so we were paused to enable it...
 		// onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
@@ -195,7 +198,6 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 			finish(); 
 			return;
 		}
-		this.mWakeLock.acquire();
 	}
 
 	@Override
@@ -377,8 +379,18 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 
 
 	public void WFConnect() {
-		Intent serverIntent = new Intent(this, DeviceListActivity.class);
-		startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+
+		if (wifiApManager.isWifiApEnabled() == true) {
+			Intent serverIntent = new Intent(this, DeviceListActivity.class);
+			startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+		} else if (startWifi() == false) {
+			Toast.makeText(this, "Sandcat is sad. Cannot start.",
+					Toast.LENGTH_LONG).show();
+			finish();			
+			return;
+		} else { 
+			Toast.makeText(this, "Wifi active. Connect again.", Toast.LENGTH_LONG).show();
+		}
 	}
 
 	private int toScreenPos(byte position){

@@ -8,15 +8,21 @@
 
 package org.sandcat.phys;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -49,6 +55,7 @@ public class UDPCommClient {
 	private int mState;
 	private final Handler mHandler;
 	public WifiApManager wApManager;
+	public WifiManager wifi;
 
 	// Constants that indicate the current connection state
 	public static final int STATE_NONE = 0;       // we're doing nothing
@@ -66,7 +73,8 @@ public class UDPCommClient {
 	 */
 	public UDPCommClient(Context context, Handler handler) {
 		wApManager = new WifiApManager (context);
-		mAdapter = BluetoothAdapter.getDefaultAdapter();
+		wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+	//	mAdapter = BluetoothAdapter.getDefaultAdapter();
 		mState = STATE_NONE;
 		mHandler = handler;
 	}
@@ -116,9 +124,8 @@ public class UDPCommClient {
 
 		// Start the thread to connect with the given device
 		setState(STATE_CONNECTING);
-		String wat = address;
-		new Thread(new ConnectThread(wat)).start();
-		if (VERBOSE) { Log.v(TAG, "Thread Success!"); }  	 
+		new Thread(new ConnectThreadB()).start();
+		if (VERBOSE) { Log.v(TAG, "Broadcast Thread Success!"); }  	 
 	}
 
 	/**
@@ -302,6 +309,176 @@ public class UDPCommClient {
 
 		}
 	}
+	
+	private class ConnectThreadB implements Runnable {
+		DatagramSocket socket;
+		DatagramPacket packet;
+		DatagramSocket socketR;
+		DatagramPacket packetR; 
+		MulticastLock lock;
+		InetAddress cIp;
+		DhcpInfo dhcp;
+		InetAddress sIp;
+		int counter = 0;
+		private boolean receive = true;
+		private String ip;
+		private byte[] bufP = ("doctor").getBytes();
+		private String bufK = "who";
+		private String bufACK;
+		private String bufN;
+		private byte[] bufR = new byte[1024];
+		private int bufRL = 0;
+
+		public ConnectThreadB() {	
+		    DhcpInfo dhcp = wifi.getDhcpInfo();
+			    int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+			    byte[] quads = new byte[4];
+			    for (int k = 0; k < 4; k++)
+			      quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+			    try {
+					sIp = InetAddress.getByAddress(quads);
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				}
+		}
+	
+		public void run() {
+			try {
+				//		sIp2 = InetAddress.getByName(wApManager.getWifiApIpAddress());
+				lock = wifi.createMulticastLock("SANDCAT");
+				lock.acquire();
+				socketR = new DatagramSocket(SERVERPORT);
+				packetR = new DatagramPacket(bufP, bufP.length);
+                socket = new DatagramSocket(SERVERPORT);
+                socket.setReuseAddress(true);
+				socketR.setReuseAddress(true);
+				socket.setBroadcast(true);
+				packet = new DatagramPacket(bufP, bufP.length(), sIp, SERVERPORT);
+				socket.send(packet);
+
+				byte[] buf = new byte[1024];
+				DatagramPacket packet = new DatagramPacket(buf, buf.length);
+				socket.receive(packet);
+				
+				
+				
+				
+				
+				
+				
+				socketR.setSoTimeout(5000); //5 sec wait for the client to connect
+				socketR.receive(packetR);
+				lock.release();
+				bufACK = new String(packet.getData());
+				System.out.println(s); */
+				
+				
+				
+					socket = new DatagramSocket(); 
+					packet = new DatagramPacket(buf, buf.length, cIp, SERVERPORT);
+					socketR = new DatagramSocket(SERVERPORT, sIp); 
+					socket.setReuseAddress(true);
+					socketR.setReuseAddress(true);
+					packetR = new DatagramPacket(bufR, bufR.length); 				
+					if (VERBOSE) { Log.v(TAG, "Client: Connecting"); }
+					if (VERBOSE) { Log.v(TAG, "Client sent!"); }
+					socket.send(packet);
+					if (VERBOSE) { Log.v(TAG, "Client: Sending " + new String(buf)); }  
+					if (VERBOSE) { Log.v(TAG, "Server: Listening"); } 
+					socketR.setSoTimeout(3000);
+					socketR.receive(packetR);
+					bufRL = packetR.getLength();
+					bufRSK = new String(packetR.getData()).substring(0,3);
+					bufN = new String(packetR.getData()).substring(3, packetR.getLength());
+				} catch (SocketTimeoutException e) {
+					if (counter < 3) { 
+						socket.disconnect();
+						socketR.disconnect();
+						socket.close();
+						socketR.close();
+						packet.setLength(buf.length);
+						packetR.setLength(bufR.length);
+						counter++;
+						continue; } 
+					else { 
+						setState(STATE_FAILED);
+						break; }
+				} catch (SocketException e) { if (VERBOSE) { Log.v(TAG, "Error 1"); }
+				} catch (IOException e) { if (VERBOSE) { Log.v(TAG, "Error 2"); } }
+				if (bufRSK.equals(bufRS)) {
+				//if (new String(packetR.getData()).equals(bufRS)) {
+					if (VERBOSE) { Log.v(TAG, "Server message received: " + new String(packetR.getData()).substring(0, packetR.getLength())); }						
+					receive = false; 
+					socket.disconnect();
+					socketR.disconnect();
+					socket.close();
+					socketR.close();
+					packet.setLength(buf.length);
+					packetR.setLength(bufR.length);
+					// Send the name of the connected device back to the UI Activity
+					Message msg = mHandler.obtainMessage(BluetoothOscilloscope.MESSAGE_DEVICE_NAME);
+					Bundle bundle = new Bundle();
+					bundle.putString(BluetoothOscilloscope.DEVICE_NAME, bufN);
+					msg.setData(bundle);
+					mHandler.sendMessage(msg);
+					setState(STATE_CONNECTED);
+				} else if (counter < 3) {
+					counter++;
+					socket.disconnect();
+					socketR.disconnect();
+					socket.close();
+					socketR.close();
+					packet.setLength(buf.length);
+					packetR.setLength(bufR.length);
+					continue; }
+				else {
+					setState(STATE_FAILED);
+					break; }
+			}
+		}
+		
+		
+		public ArrayList<ClientScanResult> getClientList(boolean onlyReachables, int reachableTimeout) {
+			BufferedReader br = null;
+			ArrayList<ClientScanResult> result = null;
+
+			try {
+				result = new ArrayList<ClientScanResult>();
+				br = new BufferedReader(new FileReader("/proc/net/arp"));
+				String line;
+				boolean isReachable = true;
+				while ((line = br.readLine()) != null) {
+					String[] splitted = line.split(" +");
+
+					if ((splitted != null) && (splitted.length >= 4)) {
+						// Basic sanity check
+						String mac = splitted[3];
+
+						if (mac.matches("..:..:..:..:..:..")) {
+							result.add(new ClientScanResult(splitted[0], splitted[3], splitted[5], isReachable));
+						}
+					}
+				}
+			} catch (Exception e) {
+				Log.e(this.getClass().toString(), e.getMessage());
+			} finally {
+				try {
+					br.close();
+				} catch (IOException e) {
+					Log.e(this.getClass().toString(), e.getMessage());
+				}
+			}
+
+			return result;
+		}
+
+		public void cancel() {
+
+		}
+	}
+	
+	
+	
 
 	/**
 	 * This thread runs during a connection with a remote device.
