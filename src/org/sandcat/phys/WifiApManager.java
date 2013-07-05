@@ -17,6 +17,10 @@
 package org.sandcat.phys;
 
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
@@ -112,6 +116,29 @@ public class WifiApManager {
 			Log.e(this.getClass().toString(), "", e);
 			return false;
 		}
+	}
+	
+	public String getWifiApIpAddress() {
+	    try {
+	        for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en
+	                .hasMoreElements();) {
+	            NetworkInterface intf = en.nextElement();
+	            if (intf.getName().contains("wlan")) {
+	                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr
+	                        .hasMoreElements();) {
+	                    InetAddress inetAddress = enumIpAddr.nextElement();
+	                    if (!inetAddress.isLoopbackAddress()
+	                            && (inetAddress.getAddress().length == 4)) {
+	                        //Log.d(TAG, inetAddress.getHostAddress());
+	                        return inetAddress.getHostAddress();
+	                    }
+	                }
+	            }
+	        }
+	    } catch (SocketException ex) {
+	        Log.e("", ex.toString());
+	    }
+	    return null;
 	}
 
 }

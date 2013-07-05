@@ -58,9 +58,11 @@ public class DeviceListActivity extends Activity {
 
 	//private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
-	private ArrayAdapter<String> mNewDevicesArrayAdapter;
+//	private ArrayAdapter<String> mNewDevicesArrayAdapter;
 	private ListView pairedListView;
-	private ListView newDevicesListView;
+//	private ListView newDevicesListView;
+	private String TAG = "SANDCAT";
+	private boolean VERBOSE = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
@@ -69,6 +71,7 @@ public class DeviceListActivity extends Activity {
 		// Setup the window
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.device_list);
+		setProgressBarIndeterminateVisibility(true);
 
 		// Set result CANCELED incase the user backs out
 		setResult(Activity.RESULT_CANCELED);
@@ -99,18 +102,17 @@ public class DeviceListActivity extends Activity {
 	 * Start device discover with the BluetoothAdapter
 	 */
 	private void doDiscovery(){
-		setProgressBarIndeterminateVisibility(true);
 		setTitle(R.string.scanning);
-
+		setProgressBarIndeterminateVisibility(true);
+		
 		// Turn on sub-title for new devices
-		findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+	//	findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
-		new WifiApManager(this);
 		mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
-		mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
+	//	mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.device_name);
 
 		pairedListView = (ListView) findViewById(R.id.paired_devices);
-		newDevicesListView = (ListView) findViewById(R.id.new_devices);
+//		newDevicesListView = (ListView) findViewById(R.id.new_devices);
 
 		// Find and set up the ListView for paired devices
 		pairedListView.setAdapter(mPairedDevicesArrayAdapter);
@@ -118,48 +120,46 @@ public class DeviceListActivity extends Activity {
 
 		// Find and set up the ListView for newly discovered devices
 
-		newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
-		newDevicesListView.setOnItemClickListener(mDeviceClickListener);
+	//	newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
+	//	newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 		ArrayList<ClientScanResult> clients = getClientList(true, 300);
-
-
+		
 		if (clients.size() > 0){
 			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
 			for (ClientScanResult clientScanResult : clients) {
 				mPairedDevicesArrayAdapter.add(clientScanResult.getHWAddr() + "\n" + clientScanResult.getIpAddr());
 			}
+			setTitle(R.string.select_device);
 		}
 		else {
 			String noDevices = getResources().getText(R.string.none_paired).toString();
 			mPairedDevicesArrayAdapter.add(noDevices);
-			mPairedDevicesArrayAdapter.add(noDevices);
-			mPairedDevicesArrayAdapter.add(noDevices);
-			mPairedDevicesArrayAdapter.add(noDevices);
-		}	
+			setTitle(R.string.none_paired);
+		}
+		setProgressBarIndeterminateVisibility(false);
 	}
 
 	// The on-click listener for all devices in the ListViews
 	private OnItemClickListener mDeviceClickListener = new OnItemClickListener(){
+
 		public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3){
 			// Cancel discovery because it's costly and we're about to connect
 			//mBtAdapter.cancelDiscovery();
 
-			// Get the device MAC address, which is the last 17 chars in the View
+			// Get the device IP address, which is the last 17 chars in the View
 			String info = ((TextView) v).getText().toString();
-			String address = info.substring(info.length() - 17);
+			String address = info.substring(info.length() - 14);
 
-			// Create the result Intent and include the MAC address
+			// Create the result Intent and include the IP address
 			Intent intent = new Intent();
 			intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
 
 			// Set result and finish this Activity
 			setResult(Activity.RESULT_OK, intent);
+			if (VERBOSE) { Log.v(TAG, address); }
 			finish();
 		}
 	};
-
-
-
 
 	public ArrayList<ClientScanResult> getClientList(boolean onlyReachables, int reachableTimeout) {
 		BufferedReader br = null;

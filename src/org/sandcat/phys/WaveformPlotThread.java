@@ -5,7 +5,6 @@
  * September 2010
  *  
  ***************************************/
-
 package org.sandcat.phys;
 
 import android.graphics.Canvas;
@@ -15,16 +14,16 @@ public class WaveformPlotThread extends Thread {
 	private SurfaceHolder holder;
 	private WaveformView plot_area;
 	private boolean _run = false;
-	
+
 	public WaveformPlotThread(SurfaceHolder surfaceHolder, WaveformView view){
 		holder = surfaceHolder;
 		plot_area = view;
 	}
 	public void setRunning(boolean run){
-		_run = run;
+		//_run = run;
 	}
-	
-	@Override
+
+	/*	@Override
 	public void run(){
 		Canvas c;
 		while(_run){
@@ -40,5 +39,5 @@ public class WaveformPlotThread extends Thread {
 				}
 			}
 		}
-	}
+	} */
 }
