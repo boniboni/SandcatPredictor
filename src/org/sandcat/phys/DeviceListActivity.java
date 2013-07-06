@@ -58,7 +58,7 @@ import android.widget.Toast;
 public class DeviceListActivity extends Activity {
 	// Return Intent extra
 	public static String EXTRA_DEVICE_ADDRESS = "device_address";
-	
+
 	public static final int CONNECT_STATUS = 1;
 
 	//private BluetoothAdapter mBtAdapter;
@@ -113,8 +113,6 @@ public class DeviceListActivity extends Activity {
 	private void doDiscovery(){
 		setTitle(R.string.scanning);
 		setProgressBarIndeterminateVisibility(true);
-		
-		if ()
 
 		// Turn on sub-title for new devices
 		//	findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
@@ -133,8 +131,8 @@ public class DeviceListActivity extends Activity {
 
 		//	newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
 		//	newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-		
-		ArrayList<ClientScanResult> clients = getClientList(true, 300);
+
+	/*	ArrayList<ClientScanResult> clients = getClientList(true, 300);
 
 		if (clients.size() > 0){
 			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
@@ -147,7 +145,9 @@ public class DeviceListActivity extends Activity {
 			String noDevices = getResources().getText(R.string.none_paired).toString();
 			mPairedDevicesArrayAdapter.add(noDevices);
 			setTitle(R.string.none_paired);
-		}
+		} */
+		
+		UDPDiscovery.connect();
 		setProgressBarIndeterminateVisibility(false);
 	}
 
@@ -173,63 +173,29 @@ public class DeviceListActivity extends Activity {
 		}
 	};
 
-	public ArrayList<ClientScanResult> getClientList(boolean onlyReachables, int reachableTimeout) {
-		BufferedReader br = null;
-		ArrayList<ClientScanResult> result = null;
-
-		try {
-			result = new ArrayList<ClientScanResult>();
-			br = new BufferedReader(new FileReader("/proc/net/arp"));
-			String line;
-			boolean isReachable = true;
-			while ((line = br.readLine()) != null) {
-				String[] splitted = line.split(" +");
-
-				if ((splitted != null) && (splitted.length >= 4)) {
-					// Basic sanity check
-					String mac = splitted[3];
-
-					if (mac.matches("..:..:..:..:..:..")) {
-						result.add(new ClientScanResult(splitted[0], splitted[3], splitted[5], isReachable));
-					}
-				}
-			}
-		} catch (Exception e) {
-			Log.e(this.getClass().toString(), e.getMessage());
-		} finally {
-			try {
-				br.close();
-			} catch (IOException e) {
-				Log.e(this.getClass().toString(), e.getMessage());
-			}
-		}
-
-		return result;
-	}
-
-	private final Handler mHandler = new Handler(){
-		@Override
-		public void handleMessage(Message msg){
-			switch (msg.what){
-			case CONNECT_STATUS:
-				switch (msg.arg1){
-				case UDPCommClient.NEW_DEVICE:
-					mBTStatus.setText(R.string.title_connected_to);
-					mBTStatus.append(mConnectedDeviceName);
-					break;
-				case UDPCommClient.STATE_CONNECTING:
-					mBTStatus.setText(R.string.title_connecting);
-					break;
-				case UDPCommClient.STATE_NONE:
-					mBTStatus.setText(R.string.title_not_connected);
-					break;
-				case UDPCommClient.STATE_FAILED:
-					mBTStatus.setText(R.string.title_failed);
-					break;
-				}
+private final Handler mHandler = new Handler(){
+	@Override
+	public void handleMessage(Message msg){
+		switch (msg.what){
+		case CONNECT_STATUS:
+			switch (msg.arg1){
+			case UDPCommClient.NEW_DEVICE:
+				//mBTStatus.setText(R.string.title_connected_to);
+				//mBTStatus.append(mConnectedDeviceName);
+				break;
+			case UDPCommClient.STATE_CONNECTING:
+				//mBTStatus.setText(R.string.title_connecting);
+				break;
+			case UDPCommClient.STATE_NONE:
+				//mBTStatus.setText(R.string.title_not_connected);
+				break;
+			case UDPCommClient.STATE_FAILED:
+				//mBTStatus.setText(R.string.title_failed);
 				break;
 			}
+			break;
 		}
-	};
+	}
+};
 }
 
