@@ -39,6 +39,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 import org.sandcat.phys.WifiApManager;
+
 /**
  * 
  **/
@@ -115,7 +116,7 @@ public class UDPCommClient {
 	 * Start the ConnectThread to initiate a connection to a remote device.
 	 * - device - The BluetoothDevice to connect
 	 */
-	public synchronized void connect() {
+	public synchronized void connectB() {
 
 		// Cancel any thread attempting to make a connection
 		//	if (mState == STATE_CONNECTING) {
@@ -131,6 +132,22 @@ public class UDPCommClient {
 		if (VERBOSE) { Log.v(TAG, "Broadcast Thread Success!"); }  	 
 	}
 
+	public synchronized void connect(String address) {
+
+		// Cancel any thread attempting to make a connection
+		//	if (mState == STATE_CONNECTING) {
+		//		if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
+		//	}
+
+		// Cancel any thread currently running a connection
+		//	if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+
+		// Start the thread to connect with the given device
+		setState(STATE_CONNECTING);
+		String Ip = address;
+		new Thread(new ConnectThread(Ip)).start();
+		if (VERBOSE) { Log.v(TAG, "Broadcast Thread Success!"); }  	 
+	}
 	/**
 	 * Start the ConnectedThread to begin managing a Bluetooth connection
 	 * - socket - The BluetoothSocket on which the connection was made
@@ -145,15 +162,15 @@ public class UDPCommClient {
 		//	if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 
 		// Start the thread to manage the connection and perform transmissions
-		mConnectedThread = new ConnectedThread(socket);
+		//	mConnectedThread = new ConnectedThread(socket);
 		//	mConnectedThread.start();
 
 		// Send the name of the connected device back to the UI Activity
-		Message msg = mHandler.obtainMessage(BluetoothOscilloscope.MESSAGE_DEVICE_NAME);
-		Bundle bundle = new Bundle();
+		//	Message msg = mHandler.obtainMessage(BluetoothOscilloscope.MESSAGE_DEVICE_NAME);
+		//	Bundle bundle = new Bundle();
 		//	bundle.putString(BluetoothOscilloscope.DEVICE_NAME, device.getName());
-		msg.setData(bundle);
-		mHandler.sendMessage(msg);
+		//	msg.setData(bundle);
+		//	mHandler.sendMessage(msg);
 
 		setState(STATE_CONNECTED);
 	}
@@ -225,7 +242,7 @@ public class UDPCommClient {
 		int counter = 0;
 		private boolean receive = true;
 		private String ip;
-		private byte[] buf = ("doctor").getBytes();
+		private byte[] buf = ("connect").getBytes();
 		private String bufRS = "who";
 		private String bufRSK;
 		private String bufN;
@@ -295,7 +312,7 @@ public class UDPCommClient {
 					setState(STATE_CONNECTED);
 				} else if (counter < 3) {
 					counter++;
-					
+
 					socket.disconnect();
 					socketR.disconnect();
 					socket.close();
@@ -305,6 +322,12 @@ public class UDPCommClient {
 					continue; }
 				else {
 					setState(STATE_FAILED);
+					socket.disconnect();
+					socketR.disconnect();
+					socket.close();
+					socketR.close();
+					packet.setLength(buf.length);
+					packetR.setLength(bufR.length);
 					break; }
 			}
 		}
@@ -325,14 +348,17 @@ public class UDPCommClient {
 		DhcpInfo dhcp;
 		InetAddress sIp;
 		InetAddress sIpB;
+		private Message msg;
+		private Bundle bundle;
 		List<InterfaceAddress> addresses;
-		int counter = 0;
-		private boolean receive = true;
 		private String ip;
 		private byte[] bufP = "doctor".getBytes();
-		private byte[] bufK = "who".getBytes();
-		private byte[] bufACK = new byte[1024];
+		//private byte[] bufK = "who".getBytes();
+		private String bufK = "who";
+		private String packetRS;
 		private String bufN;
+		private String senderIP;
+		private byte[] bufACK = new byte[1024];
 		private byte[] bufR = new byte[1024];
 		private int bufRL = 0;
 
@@ -349,21 +375,21 @@ public class UDPCommClient {
 				List<InterfaceAddress> addresses = temp.getInterfaceAddresses();
 				for(InterfaceAddress inetAddress:addresses)
 					sIpB=inetAddress.getBroadcast();
-				if (VERBOSE) { Log.v(TAG, "sIpB: " + sIpB + sIp); }		
+				if (VERBOSE) { Log.v(TAG, "sIpB: " + sIpB + " " + sIp); }		
 			} catch (SocketException e) {
 
 				e.printStackTrace();
 				Log.d(TAG,"getBroadcast"+e.getMessage());
 			}
 		}
-		
+
 		public void run() {
+			//		sIp2 = InetAddress.getByName(wApManager.getWifiApIpAddress());
+			//lock = wifi.createMulticastLock("SANDCAT");
+			//lock.acquire();
+			//socketR = new DatagramSocket(SERVERPORT);
+			//socketR.setReuseAddress(true);
 			try {
-				//		sIp2 = InetAddress.getByName(wApManager.getWifiApIpAddress());
-				//lock = wifi.createMulticastLock("SANDCAT");
-				//lock.acquire();
-				//socketR = new DatagramSocket(SERVERPORT);
-				//socketR.setReuseAddress(true);
 				socket = new DatagramSocket(SERVERPORT);
 				socket.setReuseAddress(true);    
 				packetR = new DatagramPacket(bufACK, bufACK.length);
@@ -382,10 +408,39 @@ public class UDPCommClient {
 				socket.disconnect();
 				socket.close();
 				if (VERBOSE) { Log.v(TAG, "Server received: " + new String(packetR.getData()).trim()); }  
-			} catch (IOException e) { }
+				packetRS = new String(packetR.getData()).trim();
+				if (packetRS.substring(0,3).equals(bufK)) {
+					bufN = packetRS.substring(4, packetRS.length());
+					senderIP = packetR.getAddress().getHostAddress();
+					if (VERBOSE) { Log.v(TAG, "Client found! " + senderIP + " Name: " + bufN); }  
+					packet.setLength(bufP.length);
+					packetR.setLength(bufACK.length);
+					msg = mHandler.obtainMessage(DeviceListActivity.CONNECT_STATUS, NEW_DEVICE, -1);
+					bundle = new Bundle();
+					bundle.putString(DeviceListActivity.NAME, bufN);
+					bundle.putString(DeviceListActivity.IP, senderIP);
+					msg.setData(bundle);
+					mHandler.sendMessage(msg);
+				}
+			} catch (SocketTimeoutException e) {
+				if (VERBOSE) { Log.v(TAG, "Error 1"); 
+				socket.disconnect();
+				socket.close();
+				packet.setLength(bufP.length);
+				packetR.setLength(bufACK.length);
+				}
+			} catch (IOException e) {
+				if (VERBOSE) { Log.v(TAG, "Error 2"); 
+				socket.disconnect();
+				socket.close();
+				packet.setLength(bufP.length);
+				packetR.setLength(bufACK.length);
+				}
+			} 
 		}
 
 	}
+
 	/* socket = new DatagramSocket(); 
 		packet = new DatagramPacket(buf, buf.length, cIp, SERVERPORT);
 		socketR = new DatagramSocket(SERVERPORT, sIp); 

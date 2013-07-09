@@ -19,18 +19,12 @@ package org.sandcat.phys;
 public class ClientScanResult {
 	private String IpAddr;
 
-	private String HWAddr;
+	private String Name;
 
-	private String Device;
-
-	private boolean isReachable;
-
-	public ClientScanResult(String ipAddr, String hWAddr, String device, boolean isReachable) {
+	public ClientScanResult(String ipAddr, String name) {
 		super();
 		IpAddr = ipAddr;
-		HWAddr = hWAddr;
-		Device = device;
-		this.setReachable(isReachable);
+		Name = name;
 	}
 
 	public String getIpAddr() {
@@ -41,27 +35,11 @@ public class ClientScanResult {
 		IpAddr = ipAddr;
 	}
 
-	public String getHWAddr() {
-		return HWAddr;
+	public String getName() {
+		return Name;
 	}
 
-	public void setHWAddr(String hWAddr) {
-		HWAddr = hWAddr;
-	}
-
-	public String getDevice() {
-		return Device;
-	}
-
-	public void setDevice(String device) {
-		Device = device;
-	}
-
-	public void setReachable(boolean isReachable) {
-		this.isReachable = isReachable;
-	}
-
-	public boolean isReachable() {
-		return isReachable;
+	public void setName(String hWAddr) {
+		Name = hWAddr;
 	}
 }

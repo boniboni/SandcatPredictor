@@ -472,9 +472,10 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		case REQUEST_CONNECT_DEVICE:
 			// When DeviceListActivity returns with a device to connect
 			if (resultCode == Activity.RESULT_OK){
-				// Get the device  IP address
-				// String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-				// Get the BLuetoothDevice object
+
+				String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+				if (VERBOSE) { Log.v(TAG, "teste" + address + "teste"); }
+				UDPComm.connect(address);
 			}
 			break;
 		case REQUEST_ENABLE_BT:

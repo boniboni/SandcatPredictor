@@ -47,6 +47,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.sandcat.phys.ClientScanResult;
 
 
 /**
@@ -56,13 +57,18 @@ import android.widget.Toast;
  * Activity in the result Intent.
  */
 public class DeviceListActivity extends Activity {
-	// Return Intent extra
-	public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
 	public static final int CONNECT_STATUS = 1;
+	public static final String NAME = "device_name";
+	public static final String IP = "device_ip";
+	public static final String EXTRA_DEVICE_ADDRESS = "device_address";
+	
+	private String dIp = null;
+	private String dName = null;
 
 	//private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<String> mPairedDevicesArrayAdapter;
+	private ArrayList<ClientScanResult> clients;
 	//	private ArrayAdapter<String> mNewDevicesArrayAdapter;
 	private ListView pairedListView;
 	//	private ListView newDevicesListView;
@@ -83,7 +89,7 @@ public class DeviceListActivity extends Activity {
 		setResult(Activity.RESULT_CANCELED);
 
 		// initialize handler to treat UDP discoveries
-		UDPDiscovery = new UDPCommClient(this, mHandler);
+		UDPDiscovery = new UDPCommClient(this, mHandlerDevice);
 
 		// Initialize the button to perform device discovery
 		Button scanButton = (Button) findViewById(R.id.button_scan);
@@ -131,24 +137,7 @@ public class DeviceListActivity extends Activity {
 
 		//	newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
 		//	newDevicesListView.setOnItemClickListener(mDeviceClickListener);
-
-	/*	ArrayList<ClientScanResult> clients = getClientList(true, 300);
-
-		if (clients.size() > 0){
-			findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
-			for (ClientScanResult clientScanResult : clients) {
-				mPairedDevicesArrayAdapter.add(clientScanResult.getHWAddr() + "\n" + clientScanResult.getIpAddr());
-			}
-			setTitle(R.string.select_device);
-		}
-		else {
-			String noDevices = getResources().getText(R.string.none_paired).toString();
-			mPairedDevicesArrayAdapter.add(noDevices);
-			setTitle(R.string.none_paired);
-		} */
-		
-		UDPDiscovery.connect();
-		setProgressBarIndeterminateVisibility(false);
+		UDPDiscovery.connectB();
 	}
 
 	// The on-click listener for all devices in the ListViews
@@ -168,34 +157,49 @@ public class DeviceListActivity extends Activity {
 
 			// Set result and finish this Activity
 			setResult(Activity.RESULT_OK, intent);
-			if (VERBOSE) { Log.v(TAG, address); }
 			finish();
 		}
 	};
 
-private final Handler mHandler = new Handler(){
-	@Override
-	public void handleMessage(Message msg){
-		switch (msg.what){
-		case CONNECT_STATUS:
-			switch (msg.arg1){
-			case UDPCommClient.NEW_DEVICE:
-				//mBTStatus.setText(R.string.title_connected_to);
-				//mBTStatus.append(mConnectedDeviceName);
-				break;
-			case UDPCommClient.STATE_CONNECTING:
-				//mBTStatus.setText(R.string.title_connecting);
-				break;
-			case UDPCommClient.STATE_NONE:
-				//mBTStatus.setText(R.string.title_not_connected);
-				break;
-			case UDPCommClient.STATE_FAILED:
-				//mBTStatus.setText(R.string.title_failed);
+	private final Handler mHandlerDevice = new Handler(){
+		@Override
+		public void handleMessage(Message msg){
+			switch (msg.what){
+			case CONNECT_STATUS:
+				switch (msg.arg1){
+				case UDPCommClient.NEW_DEVICE:
+					dName = msg.getData().getString(NAME);
+					dIp = msg.getData().getString(IP);
+					if (VERBOSE) { Log.v(TAG, "TESTE: " + dIp + " " + dName); }  
+                    clients = new ArrayList<ClientScanResult>();
+					clients.add(new ClientScanResult(dIp, dName));
+					if (clients.size() > 0){
+						findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
+						for (ClientScanResult clientScanResult : clients) {
+							mPairedDevicesArrayAdapter.add(clientScanResult.getName() + "\n" + clientScanResult.getIpAddr());
+						}
+						setTitle(R.string.select_device);
+					}
+					else {
+						String noDevices = getResources().getText(R.string.none_paired).toString();
+						mPairedDevicesArrayAdapter.add(noDevices);
+						setTitle(R.string.none_paired);
+					}
+					setProgressBarIndeterminateVisibility(false);
+					break;
+				case UDPCommClient.STATE_CONNECTING:
+					//mBTStatus.setText(R.string.title_connecting);
+					break;
+				case UDPCommClient.STATE_NONE:
+					//mBTStatus.setText(R.string.title_not_connected);
+					break;
+				case UDPCommClient.STATE_FAILED:
+					//mBTStatus.setText(R.string.title_failed);
+					break;
+				}
 				break;
 			}
-			break;
 		}
-	}
-};
+	};
 }
 
