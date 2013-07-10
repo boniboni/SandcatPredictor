@@ -213,38 +213,6 @@
         android:layout_marginLeft="15dp"
         android:orientation="horizontal" >
 
-        <RadioButton
-            android:id="@+id/rbtn_ch1"
-            android:layout_width="70dp"
-            android:layout_height="35dp"
-            android:checked="true"
-            android:text="@string/ch1_"
-            android:textColor="@color/ch1_color"
-            android:textSize="5pt" />
-
-        <TextView
-            android:id="@+id/txt_ch1_scale"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:text="@string/ch1_scale_default"
-            android:textColor="@color/ch1_color"
-            android:textSize="7pt" />
-
-        <RadioButton
-            android:id="@+id/rbtn_ch2"
-            android:layout_width="70dp"
-            android:layout_height="35dp"
-            android:text="@string/ch2_"
-            android:textColor="@color/ch2_color"
-            android:textSize="5pt" />
-
-        <TextView
-            android:id="@+id/txt_ch2_scale"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:text="@string/ch2_scale_default"
-            android:textColor="@color/ch2_color"
-            android:textSize="7pt" />
     </RadioGroup>
 
     <LinearLayout
@@ -269,5 +237,48 @@
             android:layout_height="35dp"
             android:text="@string/button_connect" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/txt_ch2_scale"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/rbtn_ch2"
+        android:layout_alignBottom="@+id/rbtn_ch2"
+        android:layout_alignLeft="@+id/txt_ch1_scale"
+        android:text="@string/ch2_scale_default"
+        android:textColor="@color/ch2_color"
+        android:textSize="7pt" />
+
+    <TextView
+        android:id="@+id/txt_ch1_scale"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/rbtn_ch1"
+        android:layout_alignBottom="@+id/rbtn_ch1"
+        android:layout_toRightOf="@+id/rbtn_ch1"
+        android:text="@string/ch1_scale_default"
+        android:textColor="@color/ch1_color"
+        android:textSize="7pt" />
+
+    <RadioButton
+        android:id="@+id/rbtn_ch2"
+        android:layout_width="70dp"
+        android:layout_height="35dp"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/txt_ch2_scale"
+        android:text="@string/ch2_"
+        android:textColor="@color/ch2_color"
+        android:textSize="5pt" />
+
+    <RadioButton
+        android:id="@+id/rbtn_ch1"
+        android:layout_width="70dp"
+        android:layout_height="35dp"
+        android:layout_below="@+id/run_settings"
+        android:layout_centerHorizontal="true"
+        android:checked="true"
+        android:text="@string/ch1_"
+        android:textColor="@color/ch1_color"
+        android:textSize="5pt" />
 
 </RelativeLayout>

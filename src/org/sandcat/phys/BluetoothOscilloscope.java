@@ -111,6 +111,10 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		// Set up the window layout
 		requestWindowFeature(Window.FEATURE_NO_TITLE);        
 		setContentView(R.layout.main);
+		
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag"); 
+		this.mWakeLock.acquire();
 
 		// initialize WifiApManager class and backup settings
 		if (startWifi() == false) {
@@ -146,30 +150,20 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	@Override
 	public void onStart() {
 		super.onStart();
+	    boolean test = true;
 		if (VERBOSE) { Log.v(TAG, "-- ON START --"); }
-
+		
 		// Prevent phone from sleeping
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag"); 
-		this.mWakeLock.acquire();
-
 		// If AP is not on, request that it be enabled.
-		if (wifiApManager.isWifiApEnabled() == true) {
-
-			// AP is now enabled, so set up the oscilloscope
-			setupOscilloscope();			
-			return;
-		}			
-		else if (startWifi() == true) {
-
-			// AP is now enabled, so set up the oscilloscope
-			setupOscilloscope();
-		} else {
-			// User did not enable Wifi AP or an error occured
+		if (wifiApManager.isWifiApEnabled() == false) {
+        test = startWifi();
+		}
+		if (test == false ) {
 			Toast.makeText(this, R.string.wifi_not_enabled_leaving, Toast.LENGTH_SHORT).show();
 			finish(); 
 			return;
 		}
+        setupOscilloscope();						
 	}
 
 	@Override
@@ -183,12 +177,9 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		// not enabled during onStart(), so we were paused to enable it...
 		// onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
 		if (wifiApManager.isWifiApEnabled() == true) {
-
 			// AP is now enabled, so set up the oscilloscope
 			setupOscilloscope();			
-			return;
-		}			
-		else if (startWifi() == true) {
+		} else if (startWifi() == true) {
 
 			// AP is now enabled, so set up the oscilloscope
 			setupOscilloscope();
