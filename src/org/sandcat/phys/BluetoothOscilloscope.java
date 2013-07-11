@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -12,11 +13,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +56,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 
 	private static final byte  CHANNEL1 = 0x01;
 	private static final byte  CHANNEL2 = 0x02;
+	protected static final int READ_HEARTBEAT = 11;
 
 	// Run/Pause status
 	private boolean bReady = false;
@@ -64,6 +68,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 
 	// Layout Views
 	private TextView mBTStatus;
+	private TextView heartBeat;
 	private Button mConnectButton;
 	private RadioButton rb1, rb2;
 	private TextView ch1pos_label, ch2pos_label;
@@ -73,8 +78,12 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	private TextView time_per_div;
 	private Button timebase_inc, timebase_dec;
 	private ToggleButton run_buton;
+	private String connectedIP;
 
 	//	public WaveformView mWaveform = null;
+
+	ImageView imgView;
+	AnimationDrawable frameAnimation;
 
 	// Name of the connected device
 	private String mConnectedDeviceName = null;
@@ -111,7 +120,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		// Set up the window layout
 		requestWindowFeature(Window.FEATURE_NO_TITLE);        
 		setContentView(R.layout.main);
-		
+
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag"); 
 		this.mWakeLock.acquire();
@@ -150,45 +159,46 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	@Override
 	public void onStart() {
 		super.onStart();
-	    boolean test = true;
+		boolean test = true;
 		if (VERBOSE) { Log.v(TAG, "-- ON START --"); }
-		
+
 		// Prevent phone from sleeping
 		// If AP is not on, request that it be enabled.
 		if (wifiApManager.isWifiApEnabled() == false) {
-        test = startWifi();
+			test = startWifi();
 		}
 		if (test == false ) {
 			Toast.makeText(this, R.string.wifi_not_enabled_leaving, Toast.LENGTH_SHORT).show();
 			finish(); 
 			return;
 		}
-        setupOscilloscope();						
+		setupOscilloscope();	
+
 	}
 
 	@Override
 	public synchronized void onResume(){
 		super.onResume();
+
+		boolean test = true;
+
 		if (VERBOSE) { Log.v(TAG, "-- ON RESUME --"); }
+
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "My Tag"); 
 		this.mWakeLock.acquire();
-		// Performing this check in onResume() covers the case in which AP was
-		// not enabled during onStart(), so we were paused to enable it...
-		// onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-		if (wifiApManager.isWifiApEnabled() == true) {
-			// AP is now enabled, so set up the oscilloscope
-			setupOscilloscope();			
-		} else if (startWifi() == true) {
 
-			// AP is now enabled, so set up the oscilloscope
-			setupOscilloscope();
-		} else {
-			// User did not enable Wifi AP or an error occured
+		// Prevent phone from sleeping
+		// If AP is not on, request that it be enabled.
+		if (wifiApManager.isWifiApEnabled() == false) {
+			test = startWifi();
+		}
+		if (test == false ) {
 			Toast.makeText(this, R.string.wifi_not_enabled_leaving, Toast.LENGTH_SHORT).show();
 			finish(); 
 			return;
 		}
+		setupOscilloscope();		
 	}
 
 	@Override
@@ -212,10 +222,6 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		super.onDestroy();
 		if (VERBOSE) { Log.v(TAG, "-- ON DESTROY --"); }
 		mWManager.setWifiEnabled(true);
-
-		// Stop the Bluetooth RFCOMM services
-		//   if (mRfcommClient != null) mRfcommClient.stop();
-		// release screen being on
 	}
 
 	@Override
@@ -327,7 +333,8 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 				WFConnect();
 			}    		
 		});
-
+		mBTStatus = (TextView) findViewById(R.id.txt_btstatus);
+		heartBeat = (TextView)findViewById(R.id.hbeat);
 		rb1 = (RadioButton)findViewById(R.id.rbtn_ch1);
 		rb2 = (RadioButton)findViewById(R.id.rbtn_ch2);
 
@@ -358,6 +365,12 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		timebase_inc.setOnClickListener(this);
 		timebase_dec.setOnClickListener(this);
 
+		imgView = (ImageView) findViewById(R.id.animationImage);                                        
+		imgView.setVisibility(ImageView.VISIBLE);
+		imgView.setBackgroundResource(R.drawable.frame_animation);
+
+		frameAnimation = (AnimationDrawable) imgView.getBackground();
+
 		run_buton = (ToggleButton) findViewById(R.id.tbtn_runtoggle);
 		run_buton.setOnClickListener(this);
 
@@ -370,18 +383,32 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 
 
 	public void WFConnect() {
+		boolean test = true;
+		if (wifiApManager.isWifiApEnabled() == false) {
+			test = startWifi();	
+			if (test == false) {
+				Toast.makeText(this, "Sandcat is sad. Cannot start.",
+						Toast.LENGTH_LONG).show();
+				finish();			
+				return;
+			} else { 
+				Toast.makeText(this, "Activating Wifi AP... Wait and try again.", Toast.LENGTH_LONG).show();
+			} }
 
-		if (wifiApManager.isWifiApEnabled() == true) {
+		if (UDPCommClient.inUse == false) {
 			Intent serverIntent = new Intent(this, DeviceListActivity.class);
-			startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
-		} else if (startWifi() == false) {
-			Toast.makeText(this, "Sandcat is sad. Cannot start.",
-					Toast.LENGTH_LONG).show();
-			finish();			
-			return;
-		} else { 
-			Toast.makeText(this, "Wifi active. Connect again.", Toast.LENGTH_LONG).show();
+			startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE); 
+		} else if (UDPCommClient.Connected == true) {
+			UDPCommClient.Connected = false;
+			UDPCommClient.inUse = false;
+			mHandler.obtainMessage(BluetoothOscilloscope.MESSAGE_STATE_CHANGE, UDPCommClient.STATE_NONE, -1).sendToTarget();
+			Toast.makeText(this, "Disconnected...", Toast.LENGTH_LONG).show();
+			frameAnimation.stop();
+		} else {
+			Toast.makeText(this, "Already connected...", Toast.LENGTH_LONG).show();
+
 		}
+
 	}
 
 	private int toScreenPos(byte position){
@@ -408,6 +435,15 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 					break;
 				case UDPCommClient.STATE_FAILED:
 					mBTStatus.setText(R.string.title_failed);
+					break;
+				}
+				break;
+			case READ_HEARTBEAT:
+				switch (msg.arg1){
+				case UDPCommClient.STATE_CONNECTED:
+					if (UDPCommClient.Connected == false) { break; }
+					heartBeat.setText(String.valueOf(msg.arg2));
+					frameAnimation.start();
 					break;
 				}
 				break;
@@ -442,6 +478,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 				mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
 				Toast.makeText(getApplicationContext(), "Connected to "
 						+ mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+				UDPComm.connected(connectedIP);
 				break;
 			case MESSAGE_TOAST:
 				Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
@@ -466,6 +503,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 
 				String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
 				if (VERBOSE) { Log.v(TAG, "teste" + address + "teste"); }
+				connectedIP = address;
 				UDPComm.connect(address);
 			}
 			break;

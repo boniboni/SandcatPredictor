@@ -25,10 +25,12 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ public class DeviceListActivity extends Activity {
 
 		// Set result CANCELED incase the user backs out
 		setResult(Activity.RESULT_CANCELED);
-
+		
 		// initialize handler to treat UDP discoveries
 		UDPDiscovery = new UDPCommClient(this, mHandlerDevice);
 
@@ -194,7 +196,10 @@ public class DeviceListActivity extends Activity {
 					//mBTStatus.setText(R.string.title_not_connected);
 					break;
 				case UDPCommClient.STATE_FAILED:
-					//mBTStatus.setText(R.string.title_failed);
+					setProgressBarIndeterminateVisibility(false);
+					String noDevices = getResources().getText(R.string.none_paired).toString();
+					mPairedDevicesArrayAdapter.add(noDevices);
+					setTitle(R.string.none_paired);
 					break;
 				}
 				break;

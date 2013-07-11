@@ -19,44 +19,77 @@ public final class R {
         public static final int timebase_color=0x7f040005;
     }
     public static final class drawable {
-        public static final int icon=0x7f020000;
+        public static final int frame_animation=0x7f020000;
+        public static final int hbeat1=0x7f020001;
+        public static final int hbeat10=0x7f020002;
+        public static final int hbeat11=0x7f020003;
+        public static final int hbeat12=0x7f020004;
+        public static final int hbeat13=0x7f020005;
+        public static final int hbeat14=0x7f020006;
+        public static final int hbeat15=0x7f020007;
+        public static final int hbeat16=0x7f020008;
+        public static final int hbeat17=0x7f020009;
+        public static final int hbeat18=0x7f02000a;
+        public static final int hbeat19=0x7f02000b;
+        public static final int hbeat2=0x7f02000c;
+        public static final int hbeat20=0x7f02000d;
+        public static final int hbeat21=0x7f02000e;
+        public static final int hbeat22=0x7f02000f;
+        public static final int hbeat23=0x7f020010;
+        public static final int hbeat24=0x7f020011;
+        public static final int hbeat25=0x7f020012;
+        public static final int hbeat26=0x7f020013;
+        public static final int hbeat27=0x7f020014;
+        public static final int hbeat28=0x7f020015;
+        public static final int hbeat29=0x7f020016;
+        public static final int hbeat3=0x7f020017;
+        public static final int hbeat30=0x7f020018;
+        public static final int hbeat4=0x7f020019;
+        public static final int hbeat5=0x7f02001a;
+        public static final int hbeat6=0x7f02001b;
+        public static final int hbeat7=0x7f02001c;
+        public static final int hbeat8=0x7f02001d;
+        public static final int hbeat9=0x7f02001e;
+        public static final int icon=0x7f02001f;
+        public static final int logo=0x7f020020;
     }
     public static final class id {
-        public static final int ToggleButton01=0x7f06000b;
-        public static final int Waveform=0x7f060004;
-        public static final int WaveformArea=0x7f060005;
-        public static final int bluetooth_settings=0x7f060020;
-        public static final int btn_position_down=0x7f060016;
-        public static final int btn_position_up=0x7f060015;
-        public static final int btn_scale_decrease=0x7f06001a;
-        public static final int btn_scale_increase=0x7f060019;
-        public static final int btn_timebase_decrease=0x7f060011;
-        public static final int btn_timebase_increase=0x7f060012;
-        public static final int button_connect=0x7f060022;
+        public static final int ToggleButton01=0x7f06000a;
+        public static final int Waveform=0x7f060003;
+        public static final int WaveformArea=0x7f060004;
+        public static final int animationImage=0x7f060022;
+        public static final int bluetooth_settings=0x7f06001a;
+        public static final int btn_position_down=0x7f060015;
+        public static final int btn_position_up=0x7f060014;
+        public static final int btn_scale_decrease=0x7f060019;
+        public static final int btn_scale_increase=0x7f060018;
+        public static final int btn_timebase_decrease=0x7f060010;
+        public static final int btn_timebase_increase=0x7f060011;
+        public static final int button_connect=0x7f06001d;
         public static final int button_scan=0x7f060002;
-        public static final int horizontal_adjusts=0x7f060010;
-        public static final int horizontal_settings=0x7f06000c;
-        public static final int horizontal_values=0x7f06000d;
+        public static final int hbeat=0x7f060023;
+        public static final int horizontal_adjusts=0x7f06000f;
+        public static final int horizontal_settings=0x7f06000b;
+        public static final int horizontal_values=0x7f06000c;
+        public static final int imageView1=0x7f06001b;
         public static final int paired_devices=0x7f060001;
-        public static final int position_settings=0x7f060013;
-        public static final int rbtn_ch1=0x7f06001c;
-        public static final int rbtn_ch2=0x7f06001e;
-        public static final int rg_channels=0x7f06001b;
-        public static final int run_settings=0x7f060008;
-        public static final int tbtn_runtoggle=0x7f06000a;
+        public static final int position_settings=0x7f060012;
+        public static final int rbtn_ch1=0x7f060021;
+        public static final int rbtn_ch2=0x7f06001f;
+        public static final int run_settings=0x7f060007;
+        public static final int tbtn_runtoggle=0x7f060009;
         public static final int title_paired_devices=0x7f060000;
-        public static final int txt_appname=0x7f060003;
-        public static final int txt_btstatus=0x7f060021;
-        public static final int txt_ch1_scale=0x7f06001d;
-        public static final int txt_ch1pos=0x7f060006;
-        public static final int txt_ch2_scale=0x7f06001f;
-        public static final int txt_ch2pos=0x7f060007;
-        public static final int txt_position_label=0x7f060014;
-        public static final int txt_position_label2=0x7f060018;
-        public static final int txt_status=0x7f060009;
-        public static final int txt_timebase=0x7f06000f;
-        public static final int txt_timebase_label=0x7f06000e;
-        public static final int vertical_settings=0x7f060017;
+        public static final int txt_btstatus=0x7f06001c;
+        public static final int txt_ch1_scale=0x7f060020;
+        public static final int txt_ch1pos=0x7f060005;
+        public static final int txt_ch2_scale=0x7f06001e;
+        public static final int txt_ch2pos=0x7f060006;
+        public static final int txt_position_label=0x7f060013;
+        public static final int txt_position_label2=0x7f060017;
+        public static final int txt_status=0x7f060008;
+        public static final int txt_timebase=0x7f06000e;
+        public static final int txt_timebase_label=0x7f06000d;
+        public static final int vertical_settings=0x7f060016;
     }
     public static final class layout {
         public static final int device_list=0x7f030000;
@@ -64,11 +97,11 @@ public final class R {
         public static final int main=0x7f030002;
     }
     public static final class string {
+        public static final int ECG=0x7f050024;
         public static final int _=0x7f05001c;
         public static final int _lt_=0x7f05001a;
         public static final int app_name=0x7f050000;
         public static final int bt_not_enabled_leaving=0x7f050009;
-        public static final int bt_status_=0x7f050023;
         /**  BluetoothOscilloscope 
          */
         public static final int button_connect=0x7f050008;
@@ -80,6 +113,7 @@ public final class R {
         public static final int dec=0x7f050018;
         public static final int down=0x7f050020;
         public static final int inc=0x7f050022;
+        public static final int logo=0x7f050025;
         public static final int none_found=0x7f050007;
         public static final int none_paired=0x7f050005;
         public static final int not_connected=0x7f05000e;
@@ -103,6 +137,7 @@ public final class R {
         public static final int track1=0x7f050016;
         public static final int track2=0x7f050017;
         public static final int up=0x7f05001b;
+        public static final int wf_status_=0x7f050023;
         public static final int wifi_not_enabled_leaving=0x7f050015;
     }
 }
