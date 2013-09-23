@@ -493,14 +493,15 @@ public class UDPCommClient {
 			
 			while (UDPCommClient.Connected == true) {
 			try {
-				if (VERBOSE) { Log.v(TAG, "Server: Receiving"); } 
+				if (VERBOSE) { Log.v(TAG, "Server: Receiving"); }
 				socketR.receive(packetR);
 				if (packetR.getAddress().getHostAddress().equals(Ip.getHostAddress())) {
 				bufR = packetR.getData();
 				bufRL = bufR[0] & 0xff;
 				if (VERBOSE) { Log.v(TAG, "Server received: " + bufRL + " expected: " + Ip.getHostAddress() + " got: " + packetR.getAddress().getHostAddress()); }
 				msg = mHandler.obtainMessage(BluetoothOscilloscope.READ_HEARTBEAT, UDPCommClient.STATE_CONNECTED, bufRL);
-				mHandler.sendMessage(msg);		
+				BluetoothOscilloscope.frameAnimation.stop();
+				mHandler.sendMessage(msg);
 				packetR.setLength(bufACK.length); }
 				packetR.setLength(bufACK.length);
 			} catch (SocketTimeoutException e) {
@@ -523,17 +524,15 @@ public class UDPCommClient {
 				}
 		}
 			try {
-		    socket = new DatagramSocket(SERVERPORT2);
-			socket.setReuseAddress(true);   
-			packet = new DatagramPacket(bufP, bufP.length, Ip, SERVERPORT2);	
-			socket.send(packet);
+			packetR.setLength(bufACK.length);
+			socketR.setReuseAddress(true);   
+			packet = new DatagramPacket(bufP, bufP.length, Ip, SERVERPORT);	
+			socketR.send(packet);
 			if (VERBOSE) { Log.v(TAG, "Server: Request "+ new String(packet.getData()).trim()); } 
 			packet.setLength(bufP.length);
-			socket.disconnect();
-			socket.close();
-			packet.setLength(bufACK.length);
 			socketR.disconnect();
 			socketR.close();
+			packet.setLength(bufACK.length);
 			UDPCommClient.inUse = false;
 			} catch (SocketException e) {
 				// TODO Auto-generated catch block

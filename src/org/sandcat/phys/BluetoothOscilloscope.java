@@ -1,8 +1,6 @@
 package org.sandcat.phys;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
@@ -13,8 +11,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
-import android.util.DisplayMetrics;
+import android.os.Vibrator;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -79,16 +78,15 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	private Button timebase_inc, timebase_dec;
 	private ToggleButton run_buton;
 	private String connectedIP;
+	private Vibrator v;
 
 	//	public WaveformView mWaveform = null;
 
 	ImageView imgView;
-	AnimationDrawable frameAnimation;
+	public static AnimationDrawable frameAnimation;
 
 	// Name of the connected device
 	private String mConnectedDeviceName = null;
-	// Local Bluetooth adapter
-	private BluetoothAdapter mBluetoothAdapter = null;
 	// Member object for the RFCOMM services
 	private UDPCommClient UDPComm = null;
 
@@ -161,7 +159,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		super.onStart();
 		boolean test = true;
 		if (VERBOSE) { Log.v(TAG, "-- ON START --"); }
-
+		v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		// Prevent phone from sleeping
 		// If AP is not on, request that it be enabled.
 		if (wifiApManager.isWifiApEnabled() == false) {
@@ -220,6 +218,8 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	@Override
 	public void onDestroy(){
 		super.onDestroy();
+		UDPCommClient.Connected = false;
+		UDPCommClient.inUse = false;
 		if (VERBOSE) { Log.v(TAG, "-- ON DESTROY --"); }
 		mWManager.setWifiEnabled(true);
 	}
@@ -227,6 +227,8 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	@Override
 	public void onStop() {
 		super.onStop();
+		UDPCommClient.Connected = false;
+		UDPCommClient.inUse = false;
 		if (VERBOSE) { Log.v(TAG, "-- ON STOP --"); }
 	}
 
@@ -441,49 +443,59 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 			case READ_HEARTBEAT:
 				switch (msg.arg1){
 				case UDPCommClient.STATE_CONNECTED:
-					if (UDPCommClient.Connected == false) { break; }
-					heartBeat.setText(String.valueOf(msg.arg2));
+					if (UDPCommClient.Connected == false) { 
+						frameAnimation.stop();
+						break; 
+					}
+				
+				if ((msg.arg2) != 0) {
 					frameAnimation.start();
+					heartBeat.setText(String.valueOf(msg.arg2));
+					v.vibrate(110);
 					break;
+				} else {
+					heartBeat.setText("No pulse");
+				frameAnimation.stop();
+				}
 				}
 				break;
-			case MESSAGE_READ: // todo: implement receive data buffering
-				byte[] readBuf = (byte[]) msg.obj;
-				int data_length = msg.arg1;
-				for(int x=0; x<data_length; x++){
-					int raw = UByte(readBuf[x]);
-					if( raw>MAX_LEVEL ){
-						if( raw==DATA_START ){
-							bDataAvailable = true;
-							dataIndex = 0; dataIndex1=0; dataIndex2=0;
-						}
-						else if( (raw==DATA_END) || (dataIndex>=MAX_SAMPLES) ){
-							bDataAvailable = false;
-							dataIndex = 0; dataIndex1=0; dataIndex2=0;
-							// mWaveform.set_data(ch1_data, ch2_data);
-							if(bReady){ // send "REQ_DATA" again
-								BluetoothOscilloscope.this.sendMessage( new String(new byte[] {REQ_DATA}) );
+				case MESSAGE_READ: // todo: implement receive data buffering
+					byte[] readBuf = (byte[]) msg.obj;
+					int data_length = msg.arg1;
+					for(int x=0; x<data_length; x++){
+						int raw = UByte(readBuf[x]);
+						if( raw>MAX_LEVEL ){
+							if( raw==DATA_START ){
+								bDataAvailable = true;
+								dataIndex = 0; dataIndex1=0; dataIndex2=0;
 							}
-							//break;
+							else if( (raw==DATA_END) || (dataIndex>=MAX_SAMPLES) ){
+								bDataAvailable = false;
+								dataIndex = 0; dataIndex1=0; dataIndex2=0;
+								// mWaveform.set_data(ch1_data, ch2_data);
+								if(bReady){ // send "REQ_DATA" again
+									BluetoothOscilloscope.this.sendMessage( new String(new byte[] {REQ_DATA}) );
+								}
+								//break;
+							}
+						}
+						else if( (bDataAvailable) && (dataIndex<(MAX_SAMPLES)) ){ // valid data
+							if((dataIndex++)%2==0) ch1_data[dataIndex1++] = raw;	// even data
+							else ch2_data[dataIndex2++] = raw;	// odd data
 						}
 					}
-					else if( (bDataAvailable) && (dataIndex<(MAX_SAMPLES)) ){ // valid data
-						if((dataIndex++)%2==0) ch1_data[dataIndex1++] = raw;	// even data
-						else ch2_data[dataIndex2++] = raw;	// odd data
-					}
-				}
-				break;
-			case MESSAGE_DEVICE_NAME:
-				// save the connected device's name
-				mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-				Toast.makeText(getApplicationContext(), "Connected to "
-						+ mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-				UDPComm.connected(connectedIP);
-				break;
-			case MESSAGE_TOAST:
-				Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
-						Toast.LENGTH_SHORT).show();
-				break;
+					break;
+				case MESSAGE_DEVICE_NAME:
+					// save the connected device's name
+					mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
+					Toast.makeText(getApplicationContext(), "Connected to "
+							+ mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+					UDPComm.connected(connectedIP);
+					break;
+				case MESSAGE_TOAST:
+					Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST),
+							Toast.LENGTH_SHORT).show();
+					break;
 			}
 		}
 		// signed to unsigned
@@ -494,6 +506,19 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 				return (int)b;
 		}
 	};
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+	    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+	        switch (keyCode) {
+	        case KeyEvent.KEYCODE_BACK :
+	            finish();
+
+	            return true;
+	        }
+	    }
+	    return super.onKeyDown(keyCode, event);
+	}
 
 	public void onActivityResult(int requestCode, int resultCode, Intent data){
 		switch (requestCode) {

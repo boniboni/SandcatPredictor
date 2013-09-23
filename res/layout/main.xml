@@ -281,9 +281,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignRight="@+id/txt_ch2_scale"
         android:layout_below="@+id/Waveform"
-        android:layout_marginLeft="15dp"
+        android:layout_marginLeft="30dp"
         android:layout_marginTop="1dp"
         android:contentDescription="@string/ECG"
         android:visibility="visible" />
