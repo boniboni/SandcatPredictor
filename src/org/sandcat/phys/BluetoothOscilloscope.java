@@ -68,6 +68,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 	// Layout Views
 	private TextView mBTStatus;
 	private TextView heartBeat;
+	private TextView heartBeat2;
 	private Button mConnectButton;
 	private RadioButton rb1, rb2;
 	private TextView ch1pos_label, ch2pos_label;
@@ -337,6 +338,7 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 		});
 		mBTStatus = (TextView) findViewById(R.id.txt_btstatus);
 		heartBeat = (TextView)findViewById(R.id.hbeat);
+		heartBeat2 = (TextView)findViewById(R.id.hbeat2);
 		rb1 = (RadioButton)findViewById(R.id.rbtn_ch1);
 		rb2 = (RadioButton)findViewById(R.id.rbtn_ch2);
 
@@ -441,23 +443,21 @@ public class BluetoothOscilloscope extends Activity implements  Button.OnClickLi
 				}
 				break;
 			case READ_HEARTBEAT:
-				switch (msg.arg1){
-				case UDPCommClient.STATE_CONNECTED:
 					if (UDPCommClient.Connected == false) { 
 						frameAnimation.stop();
 						break; 
 					}
-				
 				if ((msg.arg2) != 0) {
 					frameAnimation.start();
 					heartBeat.setText(String.valueOf(msg.arg2));
+					heartBeat2.setText(String.valueOf(msg.arg1));
 					v.vibrate(110);
 					break;
 				} else {
 					heartBeat.setText("No pulse");
 				frameAnimation.stop();
 				}
-				}
+
 				break;
 				case MESSAGE_READ: // todo: implement receive data buffering
 					byte[] readBuf = (byte[]) msg.obj;

@@ -293,4 +293,12 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/Waveform"
         android:layout_toLeftOf="@+id/txt_ch2_scale" />
+    
+        <TextView
+        android:id="@+id/hbeat2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Waveform"
+        android:layout_toLeftOf="@+id/hbeat" />
+
 </RelativeLayout>

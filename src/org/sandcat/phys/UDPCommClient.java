@@ -41,15 +41,8 @@ import java.net.UnknownHostException;
 
 import org.sandcat.phys.WifiApManager;
 
-/**
- * 
- **/
-public class UDPCommClient {
 
-	// Unique UUID for this application
-	private static final UUID MY_UUID = 
-			//UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
-			UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+public class UDPCommClient {
 	public static final int SERVERPORT = 6666;
 	public static final int SERVERPORT2 = 6667;
 
@@ -344,7 +337,7 @@ public class UDPCommClient {
 				List<InterfaceAddress> addresses = temp.getInterfaceAddresses();
 				for(InterfaceAddress inetAddress:addresses)
 					sIpB=inetAddress.getBroadcast();
-				if (VERBOSE) { Log.v(TAG, "sIpB: " + sIpB + " " + sIp); }		
+				if (VERBOSE) { Log.v(TAG, "sIpB: " + sIpB + " Ip: " + sIp); }		
 			} catch (SocketException e) {
 
 				e.printStackTrace();
@@ -371,11 +364,12 @@ public class UDPCommClient {
 				socket.disconnect();
 				socket.close();
 				socketR = new DatagramSocket(SERVERPORT);
-				socketR.setReuseAddress(true); 
-				socketR.setSoTimeout(8000); //5 sec wait for the client to connect
+				socketR.setReuseAddress(true);
+				socketR.setSoTimeout(5000); //5 sec wait for the client to connect
 				socketR.receive(packetR);
-				if (VERBOSE) { Log.v(TAG, "Server received: " + new String(packetR.getData()).trim()); }  
 				packetRS = new String(packetR.getData()).trim();
+				if (VERBOSE) { Log.v(TAG, "Server received: " + packetRS); }  
+
 				if (packetRS.substring(0,3).equals(bufK)) {
 					bufN = packetRS.substring(4, packetRS.length());
 					senderIP = packetR.getAddress().getHostAddress();
@@ -442,10 +436,12 @@ public class UDPCommClient {
 		//private byte[] bufK = "who".getBytes();
 		private String bufK = "who";
 		private String packetRS;
+		private String[] ss = new String[2];
+		private String decoded;
 		private String bufN;
 		private String senderIP;
-		private byte[] bufACK = new byte[1];
-		private byte[] bufR = new byte[1];
+		private byte[] bufACK = new byte[11];
+		private byte[] bufR = new byte[11];
 		private int bufRL = 0;
 
 		public ConnectedThread(String ip) {	
@@ -456,7 +452,7 @@ public class UDPCommClient {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
-			try {
+		/*	try {
 				sIp = InetAddress.getByName(wApManager.getWifiApIpAddress());
 			} catch (UnknownHostException e1) {
 				// TODO Auto-generated catch block
@@ -473,7 +469,7 @@ public class UDPCommClient {
 
 				e.printStackTrace();
 				Log.d(TAG,"getBroadcast"+e.getMessage());
-			}
+			} */
 		}
 
 		public void run() {
@@ -496,10 +492,11 @@ public class UDPCommClient {
 				if (VERBOSE) { Log.v(TAG, "Server: Receiving"); }
 				socketR.receive(packetR);
 				if (packetR.getAddress().getHostAddress().equals(Ip.getHostAddress())) {
-				bufR = packetR.getData();
-				bufRL = bufR[0] & 0xff;
-				if (VERBOSE) { Log.v(TAG, "Server received: " + bufRL + " expected: " + Ip.getHostAddress() + " got: " + packetR.getAddress().getHostAddress()); }
-				msg = mHandler.obtainMessage(BluetoothOscilloscope.READ_HEARTBEAT, UDPCommClient.STATE_CONNECTED, bufRL);
+				decoded = new String(packetR.getData()).trim();
+				ss=decoded.split("\\s+",2);
+				if (VERBOSE) { Log.v(TAG, "Server received: " + ss[0] + ss[1] + " expected: " + Ip.getHostAddress() + " got: " + packetR.getAddress().getHostAddress()); }
+				msg = mHandler.obtainMessage(BluetoothOscilloscope.READ_HEARTBEAT,  Integer.parseInt(ss[1]), Integer.parseInt(ss[0]));
+				if (VERBOSE) { Log.v(TAG, "t6"); }
 				BluetoothOscilloscope.frameAnimation.stop();
 				mHandler.sendMessage(msg);
 				packetR.setLength(bufACK.length); }

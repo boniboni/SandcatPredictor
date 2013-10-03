@@ -56,6 +56,7 @@ public final class R {
         public static final int button_connect=0x7f06001d;
         public static final int button_scan=0x7f060002;
         public static final int hbeat=0x7f060023;
+        public static final int hbeat2=0x7f060024;
         public static final int horizontal_adjusts=0x7f06000f;
         public static final int horizontal_settings=0x7f06000b;
         public static final int horizontal_values=0x7f06000c;
